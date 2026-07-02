@@ -29,8 +29,6 @@ jobs:
         # base path = "/<repo>" so links work under the project Pages subpath.
         run: uv run vega build --out dist --base "/${GITHUB_REPOSITORY#*/}"
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
