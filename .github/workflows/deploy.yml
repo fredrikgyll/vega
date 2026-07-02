@@ -25,8 +25,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          # Cache the uv wheel cache, keyed on uv.lock (restored from run 2 on).
+          enable-cache: true
+      - name: Cache uv-managed Python
+        # The interpreter lives in uv's data dir, outside the wheel cache above.
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/uv/python
+          key: uv-python-${{ runner.os }}-${{ hashFiles('.python-version') }}
+      - name: Install dependencies (cached)
+        run: uv sync --frozen
       - name: Build static site
-        # base path = "/<repo>" so links work under the project Pages subpath.
+        # Everything above is cached; only this step runs fresh (it fetches the
+        # live program). base path = "/<repo>" so links work under the subpath.
         run: uv run vega build --out dist --base "/${GITHUB_REPOSITORY#*/}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
