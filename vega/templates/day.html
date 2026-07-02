@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ day|no_date }} – Vega Scene{% endblock %}
+{% block content %}
+  <div class="pager">
+    {% if prev_day %}<a href="{{ base }}/day/{{ prev_day.isoformat() }}">← {{ prev_day|no_date }}</a>{% else %}<span></span>{% endif %}
+    {% if next_day %}<a href="{{ base }}/day/{{ next_day.isoformat() }}">{{ next_day|no_date }} →</a>{% endif %}
+  </div>
+  <h1>{{ day|no_date }}</h1>
+  <p class="sub">{{ shows|length }} visninger.</p>
+  <ul class="showlist">
+    {% for s in shows %}
+      <li class="showrow">
+        <span class="time">{{ s.start.strftime('%H:%M') }}</span>
+        <div class="grow">
+          <div><a href="{{ base }}/movie/{{ s.movie_main_version_id }}"><b>{{ s.title }}</b></a>
+            {% if s.show_type %}<span class="badge type">{{ s.show_type }}</span>{% endif %}
+            {% for f in s.formats %}<span class="badge format">{{ f }}</span>{% endfor %}
+            {% if s.age_rating %}<span class="badge age">{{ s.age_rating }}</span>{% endif %}
+            {{ m.status_badge(s.ticket_status) }}
+          </div>
+          <div class="screen">{{ s.screen_name }}
+            {%- if s.languages %} · {{ s.languages|join(', ') }}{% endif -%}
+            {%- if s.running_minutes %} · {{ m.runtime(s.running_minutes)|trim }}{% endif -%}
+          </div>
+        </div>
+        {% if s.ticket_sale_url and s.ticket_status != 'UTSOLGT' %}
+          <a class="btn" href="{{ s.ticket_sale_url }}" target="_blank" rel="noopener">Billetter</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

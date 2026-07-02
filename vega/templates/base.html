@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Vega Scene{% endblock %}</title>
+  <style>
+    /* Brand system inspired by vegascene.no: monospace, off-white bg, black ink,
+       red + yellow accents, square corners. Font: Courier Prime (SIL OFL),
+       self-hosted. */
+    @font-face {
+      font-family: "Courier Prime";
+      src: url("{{ base }}/static/fonts/CourierPrime-Regular.woff2") format("woff2");
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: "Courier Prime";
+      src: url("{{ base }}/static/fonts/CourierPrime-Bold.woff2") format("woff2");
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
+    :root {
+      --red: #e63629; --yellow: #ffc900; --white: #fefefe;
+      --ink: #111; --muted: #6b6b6b; --hair: #e2e0da;
+      --mono: "Courier Prime", ui-monospace, SFMono-Regular, Menlo, monospace;
+      /* Courier Prime only ships 400/700, so fake a bit of extra weight with a
+         hairline stroke in the text colour. Bump toward ~0.5px for heavier. */
+      --weight: 0.35px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--white); color: var(--ink);
+      font: 14px/1.55 var(--mono); -webkit-font-smoothing: antialiased;
+      -webkit-text-stroke: var(--weight) currentColor;
+    }
+    a { color: var(--ink); text-decoration: none; }
+    a:hover { color: var(--red); }
+    h1 { font-size: 26px; font-weight: 400; margin: 0 0 6px; letter-spacing: -.2px; }
+    h2 { font-size: 13px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 14px; }
+    .sub { color: var(--muted); margin: 0 0 26px; }
+    .upper { text-transform: uppercase; letter-spacing: .6px; }
+
+    header { position: sticky; top: 0; z-index: 10; background: var(--white); border-bottom: 2px solid var(--ink); }
+    .bar { max-width: 1120px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 9px; font-size: 17px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink); }
+    .brand .mark { width: 15px; height: 15px; background: var(--red); display: inline-block; }
+    nav { display: flex; gap: 22px; }
+    nav a { color: var(--ink); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 2px; border-bottom: 2px solid transparent; }
+    nav a.active { border-bottom-color: var(--red); }
+    nav a:hover { color: var(--red); }
+    main { max-width: 1120px; margin: 0 auto; padding: 30px 20px 70px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+    .card { background: #fff; border: 1px solid var(--ink); display: flex; flex-direction: column; transition: box-shadow .1s, transform .1s; }
+    .card:hover { box-shadow: 5px 5px 0 var(--red); transform: translate(-1px,-1px); }
+    .card:hover .name { color: var(--red); }
+    .poster { aspect-ratio: 16/9; width: 100%; object-fit: cover; background: #eee; display: block; border-bottom: 1px solid var(--ink); }
+    .poster.ph { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; text-align: center; padding: 10px; }
+    .card .body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 7px; }
+    .card .name { font-size: 15px; line-height: 1.25; }
+    .meta { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    .nextshows { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; font-variant-numeric: tabular-nums; margin-top: 1px; }
+    .nextshows .scr { color: var(--muted); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; background: #fff; color: var(--ink); border: 1px solid var(--ink); }
+    a.chip:hover { background: var(--ink); color: #fff; }
+    .badge { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; }
+    .badge.sold { background: var(--red); color: #fff; }
+    .badge.few { background: var(--yellow); color: var(--ink); }
+    .badge.age { background: #fff; color: var(--ink); border: 1px solid var(--ink); }
+    .badge.format { background: var(--ink); color: #fff; }        /* 35 mm, Dolby Atmos */
+    .badge.type { background: var(--yellow); color: var(--ink); } /* Førpremiere, Siste dag … */
+    .anno { color: var(--red); }                                  /* format note on card rows */
+
+    .calwrap { overflow-x: auto; }
+    .cal { display: grid; grid-template-columns: repeat(7, minmax(108px, 1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+    .cal-head { padding: 8px 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; color: var(--muted); background: var(--ink); color: var(--white); border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+    .cell { min-height: 104px; padding: 6px 7px 9px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+    /* Background alternates by month so month bands are easy to scan. */
+    .cell.mon-a { background: #fefefe; }
+    .cell.mon-b { background: #efe9dc; }
+    .cell .dnum { display: flex; align-items: baseline; gap: 5px; color: var(--muted); font-size: 12px; }
+    .cell.has .dnum { color: var(--ink); }
+    .cell .dnum:hover { color: var(--red); }
+    .cell .dnum .d { font-size: 14px; }
+    .cell .dnum .mo { text-transform: uppercase; letter-spacing: .5px; font-size: 10.5px; color: var(--red); }
+    .cell .film { font-size: 11px; line-height: 1.2; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 2px solid var(--red); padding-left: 5px; }
+    .cell .film:hover { color: var(--red); }
+
+    .showlist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+    .showrow { display: flex; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid var(--hair); }
+    .showrow .time { font-variant-numeric: tabular-nums; width: 58px; font-size: 17px; }
+    .showrow .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .showrow .screen { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    .btn { border: 1px solid var(--red); background: var(--red); color: #fff; padding: 7px 14px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .btn:hover { background: #c72d22; color: #fff; }
+
+    .detail { display: grid; grid-template-columns: 460px 1fr; gap: 30px; align-items: start; }
+    .detail .poster { border: 1px solid var(--ink); }
+    .detail h1 { font-size: 30px; }
+    .synopsis { white-space: pre-wrap; color: #2a2a2a; font-size: 14.5px; }
+    .facts { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 7px; }
+    .facts b { color: var(--muted); font-weight: 400; text-transform: uppercase; font-size: 11.5px; letter-spacing: .5px; display: inline-block; min-width: 118px; }
+    .pager { display: flex; justify-content: space-between; margin-bottom: 20px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+    @media (max-width: 760px) { .detail { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a class="brand" href="{{ base }}/"><span class="mark"></span>Vega Scene</a>
+      <nav>
+        <a href="{{ base }}/" class="{{ 'active' if active == 'catalog' }}">På kino</a>
+        <a href="{{ base }}/premieres" class="{{ 'active' if active == 'premieres' }}">Premierer</a>
+        <a href="{{ base }}/calendar" class="{{ 'active' if active == 'calendar' }}">Kalender</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

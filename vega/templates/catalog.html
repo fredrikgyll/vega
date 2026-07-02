@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}På kino – Vega Scene{% endblock %}
+{% block content %}
+  <h1>På kino</h1>
+  <p class="sub">{{ films|length }} filmer med kommende visninger, neste visning først.</p>
+  {% if films %}
+    <div class="grid">
+      {% for film in films %}{{ m.film_card(film) }}{% endfor %}
+    </div>
+  {% else %}
+    <p class="sub">Ingen kommende visninger i basen. Kjør <code>vega sync</code>.</p>
+  {% endif %}
+{% endblock %}

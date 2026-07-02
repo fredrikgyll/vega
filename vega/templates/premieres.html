@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Premierer – Vega Scene{% endblock %}
+{% block content %}
+  <h1>Premierer</h1>
+  <p class="sub">Filmer med premiere fra og med i dag, tidligste først.</p>
+
+  {% set this_week = films|selectattr('premiere_date', 'le', next_week)|list %}
+  {% if this_week %}
+    <h2 style="color:var(--red)">Neste 7 dager</h2>
+    <div class="grid" style="margin-bottom:36px">
+      {% for film in this_week %}{{ m.film_card(film) }}{% endfor %}
+    </div>
+  {% endif %}
+
+  {% set later = films|rejectattr('premiere_date', 'le', next_week)|list %}
+  {% if later %}
+    <h2 style="color:var(--muted)">Senere</h2>
+    <div class="grid">
+      {% for film in later %}{{ m.film_card(film) }}{% endfor %}
+    </div>
+  {% endif %}
+
+  {% if not films %}<p class="sub">Ingen kommende premierer i basen.</p>{% endif %}
+{% endblock %}

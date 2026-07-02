@@ -1,0 +1,37 @@
+{% macro poster(url, alt) %}
+  {% if url %}
+    <img class="poster" src="{{ url }}" alt="{{ alt }}" loading="lazy">
+  {% else %}
+    <div class="poster ph">{{ alt }}</div>
+  {% endif %}
+{% endmacro %}
+
+{% macro runtime(mins) %}{% if mins %}{{ mins // 60 }}t {{ mins % 60 }}m{% endif %}{% endmacro %}
+
+{% macro status_badge(status) %}
+  {% if status == 'UTSOLGT' %}<span class="badge sold">Utsolgt</span>
+  {% elif status %}<span class="badge few">{{ status|capitalize }}</span>{% endif %}
+{% endmacro %}
+
+{% macro film_card(m) %}
+  <a class="card" href="{{ base }}/movie/{{ m.main_version_id }}">
+    {{ poster(m.poster_url, m.title) }}
+    <div class="body">
+      <div class="name">{{ m.title }}</div>
+      <div class="meta">
+        {%- set bits = [] -%}
+        {%- if m.year %}{% set _ = bits.append(m.year|string) %}{% endif -%}
+        {%- set rt = runtime(m.running_minutes)|trim %}{% if rt %}{% set _ = bits.append(rt) %}{% endif -%}
+        {{ bits|join(' · ') }}
+      </div>
+      {% if m.genres %}<div class="chips">{% for g in m.genres[:3] %}<span class="chip">{{ g }}</span>{% endfor %}</div>{% endif %}
+      {% if m.next_shows %}<div class="nextshows">
+        {% for s in m.next_shows %}
+          <div>{{ s.start|no_datetime }} · <span class="scr">{{ s.screen.replace('Vega Kino ', 'Sal ') }}</span>
+            {%- for f in s.formats %} · <span class="anno">{{ f }}</span>{% endfor -%}
+          </div>
+        {% endfor %}
+      </div>{% endif %}
+    </div>
+  </a>
+{% endmacro %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Kalender – Vega Scene{% endblock %}
+{% block content %}
+  <h1>Kalender</h1>
+  <p class="sub">Alle visninger, uke for uke.</p>
+  {% if weeks %}
+    <div class="calwrap">
+      <div class="cal">
+        {% for wd in weekdays %}<div class="cal-head">{{ wd }}</div>{% endfor %}
+        {% for week in weeks %}
+          {% set wfirst = loop.first %}
+          {% for cell in week %}
+            <div class="cell mon-{{ 'a' if cell.date.month % 2 else 'b' }}{{ ' has' if cell.films }}">
+              <a class="dnum" href="{{ base }}/day/{{ cell.date.isoformat() }}">
+                <span class="d">{{ cell.date.day }}</span>{% if cell.date.day == 1 or (wfirst and loop.first) %}<span class="mo">{{ cell.date|no_month }}</span>{% endif %}
+              </a>
+              {% for f in cell.films %}
+                <a class="film" href="{{ base }}/movie/{{ f.main_id }}" title="{{ f.title }}{% if f.shows > 1 %} ({{ f.shows }} visninger){% endif %}">{{ f.title }}</a>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <p class="sub">Ingen visninger i basen.</p>
+  {% endif %}
+{% endblock %}

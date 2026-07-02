@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ movie.title }} – Vega Scene{% endblock %}
+{% block content %}
+  <div class="detail">
+    <div>{{ m.poster(movie.poster_url_large, movie.title) }}</div>
+    <div>
+      <h1>{{ movie.title }}</h1>
+      {% if movie.original_title and movie.original_title != movie.title %}
+        <p class="sub">{{ movie.original_title }}</p>
+      {% endif %}
+
+      {% if movie.genres %}<div class="chips" style="margin-bottom:14px">
+        {% for g in movie.genres %}<span class="chip">{{ g }}</span>{% endfor %}
+      </div>{% endif %}
+
+      {% if movie.synopsis %}<p class="synopsis">{{ movie.synopsis }}</p>{% endif %}
+
+      <ul class="facts">
+        {% if movie.director %}<li><b>Regi</b> {{ movie.director }}</li>{% endif %}
+        {% if movie.cast %}<li><b>Skuespillere</b> {{ movie.cast }}</li>{% endif %}
+        {% if movie.running_minutes %}<li><b>Spilletid</b> {{ m.runtime(movie.running_minutes)|trim }}</li>{% endif %}
+        {% if movie.age_rating %}<li><b>Aldersgrense</b> {{ movie.age_rating }}</li>{% endif %}
+        {% if movie.premiere_date %}<li><b>Premiere</b> {{ movie.premiere_date }}</li>{% endif %}
+        {% if movie.nationality %}<li><b>Land</b> {{ movie.nationality|join(', ') }}</li>{% endif %}
+        {% if movie.year %}<li><b>År</b> {{ movie.year }}</li>{% endif %}
+      </ul>
+
+      {% if movie.reviews %}
+        <div class="chips" style="margin-bottom:14px">
+          {% for r in movie.reviews %}
+            <a class="chip" {% if r.reviewUrl %}href="{{ r.reviewUrl }}" target="_blank" rel="noopener"{% endif %}>
+              {{ r.who }} {{ r.diceValue }}🎲</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <h2 style="font-size:17px;margin:22px 0 6px">Visninger</h2>
+      <ul class="showlist">
+        {% for s in movie.shows %}
+          <li class="showrow">
+            <span class="time" style="width:auto">{{ s.start|no_datetime }}</span>
+            <div class="grow">
+              <span class="screen">{{ s.screen_name }}
+                {%- if s.languages %} · {{ s.languages|join(', ') }}{% endif -%}
+              </span>
+              <span>
+                {%- if s.show_type %}<span class="badge type">{{ s.show_type }}</span> {% endif -%}
+                {%- for f in s.formats %}<span class="badge format">{{ f }}</span> {% endfor -%}
+                {{ m.status_badge(s.ticket_status) }}
+              </span>
+            </div>
+            {% if s.ticket_sale_url and s.ticket_status != 'UTSOLGT' %}
+              <a class="btn" href="{{ s.ticket_sale_url }}" target="_blank" rel="noopener">Billetter</a>
+            {% endif %}
+          </li>
+        {% else %}
+          <li class="sub">Ingen kommende visninger.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}
