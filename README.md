@@ -1,4 +1,4 @@
-# vega
+# Vega
 
 A small service that mirrors the [Vega Scene](https://www.vegascene.no/) **film**
 program into a local SQLite store and lets you browse the whole upcoming schedule
